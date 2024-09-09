@@ -1,1 +1,2 @@
-# Limor--Final-Workshop---CICD
+# Devops-CICD-Udi-Center-app
+namegenerator
