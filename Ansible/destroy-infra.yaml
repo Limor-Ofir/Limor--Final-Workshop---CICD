@@ -1,0 +1,26 @@
+---
+- name: Destroy AWS infrastructure
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Retrieve running EC2 instances
+      amazon.aws.ec2_instance_facts:
+        region: us-east-1
+        aws_access_key: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
+        aws_secret_key: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
+      register: ec2_facts
+
+    - name: Terminate EC2 instances
+      amazon.aws.ec2_instance:
+        state: absent
+        region: us-east-1
+        aws_access_key: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
+        aws_secret_key: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
+        instance_ids: "{{ ec2_facts.instances | json_query('Instances[?State.Name==`running`].InstanceId') }}"
+      when: ec2_facts.instances | json_query('Instances[?State.Name==`running`].InstanceId') | length > 0
+
+    - name: Output termination result
+      debug:
+        msg: "Terminated instances: {{ ec2_facts.instances | json_query('Instances[?State.Name==`running`].InstanceId') }}"
+      when: ec2_facts.instances | json_query('Instances[?State.Name==`running`].InstanceId') | length > 0
+
