@@ -26,7 +26,7 @@ playbook 1: create-infra.yaml
 
     - name: Setup web server
       hosts: app
-      user: centos
+      user: ubuntu
       become: true
       gather_facts: true
       tasks:
