@@ -1,3 +1,4 @@
+playbook 1: create-infra.yaml
 ---
 - name: Create AWS infrastructure
   hosts: localhost
@@ -22,3 +23,49 @@
         aws_access_key: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
         aws_secret_key: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
       loop: "{{ range(1, 4) }}"
+
+    - name: Setup web server
+      hosts: app
+      user: centos
+      become: true
+      gather_facts: true
+      tasks:
+    - name: Install epel-release package
+      yum:
+        name: epel-release
+        state: present
+    - name: Install necessary packages
+      yum:
+        name:
+          - git
+          - python3-pip
+          - yum-utils
+        state: present
+    - name: Add Docker CE repo
+      shell: yum-config-manager --add-repo
+        https://download.docker.com/linux/centos/docker-ce.repo
+    - name: Install Docker packages
+      yum:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-compose
+        state: present
+    - name: Start Docker service
+      service:
+        name: docker
+        state: started
+        enabled: true
+    - name: Pull Docker image from DockerHub
+      docker_image:
+        name: ofirlimor/udi-center-app
+        source: pull
+    - name: Run Docker container
+      docker_container:
+        name: udi-center-container
+        image: ofirlimor/udi-center-app
+        state: started
+        ports:
+          - 80:80
+
