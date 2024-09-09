@@ -1,2 +1,2 @@
-# Devops-CICD-Udi-Center-app
+# src
 namegenerator
