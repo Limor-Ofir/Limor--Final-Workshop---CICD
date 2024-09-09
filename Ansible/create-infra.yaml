@@ -1,0 +1,24 @@
+---
+- name: Create AWS infrastructure
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Launch EC2 instances
+      amazon.aws.ec2_instance:
+        name: "limor_instance_{{ item }}"
+        key_name: Limor-Logs
+        instance_type: t2.micro
+        image_id: ami-0a0e5d9c7acc336f1
+        state: present
+        region: us-east-1
+        count: 1
+        tags:
+          Name: "limor_instance_{{ item }}"
+          Environment: production
+        security_groups:
+          - default
+        assign_public_ip: yes
+        wait: yes
+        aws_access_key: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
+        aws_secret_key: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
+      loop: "{{ range(1, 4) }}"
